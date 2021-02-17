@@ -110,6 +110,7 @@
   (set-lsp-priority! 'ccls 2)) ; optional as ccls is the default in Doom
 #+END_SRC
 
+
 ** debugger adapter support 
 #+NAME:
 #+BEGIN_SRC emacs-lisp :tangle yes
