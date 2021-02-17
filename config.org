@@ -1,0 +1,150 @@
+** user info
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(setq user-full-name "Yong Chul Ju"
+      user-mail-address "yochju@gmail.com")
+#+END_SRC
+
+
+** fonts
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(setq doom-font (font-spec :family "Monaco" :weight 'semi-light)
+      doom-variable-pitch-font (font-spec :family "sans"))
+#+END_SRC
+
+
+** theme
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; There are two ways to load a theme. Both assume the theme is installed and
+;; available. You can either set `doom-theme' or manually load a theme with the
+;; `load-theme' function. This is the default:
+(setq doom-theme 'doom-one)
+#+END_SRC
+
+
+** org directory
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; If you use `org' and don't want your org files in the default location below,
+;; change `org-directory'. It must be set before org loads!
+(setq org-directory "~/.org/")
+#+END_SRC
+
+
+** display line number
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; This determines the style of line numbers in effect. If set to `nil', line
+;; numbers are disabled. For relative line numbers, set this to `relative'.
+(setq display-line-numbers-type t)
+#+END_SRC
+
+
+** menu, tool bar, scroll bar, tooltip
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(menu-bar-mode 1)
+(tool-bar-mode 1)
+(scroll-bar-mode 1)
+(tooltip-mode 1)
+#+END_SRC
+
+
+** frame size
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(add-to-list 'default-frame-alist '(height . 70))
+(add-to-list 'default-frame-alist '(width . 160))
+#+END_SRC
+
+
+** cursor movement: M-f for forward to word
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(require 'misc)
+(global-set-key (kbd "M-f") #'forward-to-word)
+;; (map! "<M-f>"  #'forward-to-word)
+#+END_SRC
+
+
+** cursor shape and blinking
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(setq-default cursor-type 'hollow)
+(blink-cursor-mode)
+#+END_SRC
+
+
+** "y" instead of "yes"
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+
+** auto revert mode
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(global-auto-revert-mode 1)
+(add-hook 'dired-mode-hook 'auto-revert-mode)
+#+END_SRC
+
+
+* Programming Languages
+
+** python 
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(after! lsp-python-ms
+  (set-lsp-priority! 'mspyls 1))
+#+END_SRC
+
+
+** ccls 
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(after! ccls
+  (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t)))
+  (set-lsp-priority! 'ccls 2)) ; optional as ccls is the default in Doom
+#+END_SRC
+
+** debugger adapter support 
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; https://github.com/daviwil/dotfiles/blob/master/Emacs.org#debug-adapter-support
+(after! dap-mode
+  (dap-ui-mode 1)
+  (dap-tooltip-mode 1)
+  (require 'dap-node)
+  (dap-node-setup)) 
+#+END_SRC
+
+
+* key binding 
+** DAP
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(map! :after dap-mode
+      :map dap-mode-map
+      :n
+      
+      :desc "DAP debug"
+      "<f12>" #'dap-debug
+
+      :desc "DAP step-in"
+      "<f4>" #'dap-step-in
+
+      :desc "DAP step-out"
+      "<f5>" #'dap-step-out
+
+      :desc "DAP next"
+      "<f6>" #'dap-next
+      
+      :desc "DAP breakpoint toggle"
+      "<f7>" #'dap-breakpoint-toggle
+
+      :desc "DAP continue"
+      "<f8>" #'dap-continue)
+#+END_SRC
