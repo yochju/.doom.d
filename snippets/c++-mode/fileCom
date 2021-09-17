@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: file comment
+# uuid: fileCom
+# key: fileCom
+# condition: t
+# --
+/**
+ *  @project    : $1
+ *  @file       : $2
+ *  @description: $3 
+ *      [TODO: $4]
+ *
+ *  created on: $5
+ *  created by: $6
+ */

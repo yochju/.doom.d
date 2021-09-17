@@ -1,0 +1,352 @@
+** user info
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(setq user-full-name "Yong Chul Ju"
+      user-mail-address "yochju@gmail.com")
+#+END_SRC
+
+
+** fonts
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(setq doom-font (font-spec :family "Monaco" :weight 'semi-light)
+      doom-variable-pitch-font (font-spec :family "sans"))
+#+END_SRC
+
+
+** theme
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; There are two ways to load a theme. Both assume the theme is installed and
+;; available. You can either set `doom-theme' or manually load a theme with the
+;; `load-theme' function. This is the default:
+(setq doom-theme 'doom-one)
+#+END_SRC
+
+
+** org directory
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; If you use `org' and don't want your org files in the default location below,
+;; change `org-directory'. It must be set before org loads!
+(setq org-directory "~/.org/")
+#+END_SRC
+
+
+** org2blog
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(require 'org2blog)
+(setq org2blog/wp-blog-alist
+      '(("wordpress"
+         :url "http://yochju.wordpress.com/xmlrpc.php"
+         :username "yochju"
+         :default-title "Hello World"
+         :default-categories ()
+         :tags-as-categories nil)))
+#+END_SRC
+
+
+** display line number
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; This determines the style of line numbers in effect. If set to `nil', line
+;; numbers are disabled. For relative line numbers, set this to `relative'.
+(setq display-line-numbers-type t)
+#+END_SRC
+
+
+** menu, tool bar, scroll bar, tooltip
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(menu-bar-mode 1)
+(tool-bar-mode 0)
+(scroll-bar-mode 1)
+(tooltip-mode 1)
+#+END_SRC
+
+
+** winmove
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(windmove-default-keybindings)
+#+END_SRC
+
+
+** frame size
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(add-to-list 'default-frame-alist '(height . 50))
+(add-to-list 'default-frame-alist '(width . 160))
+#+END_SRC
+
+
+** cursor movement: M-f for forward to word
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(require 'misc)
+(global-set-key (kbd "M-f") #'forward-to-word)
+;; (map! "<M-f>"  #'forward-to-word)
+#+END_SRC
+
+
+** cursor shape and blinking
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(setq-default cursor-type 'hollow)
+(blink-cursor-mode)
+#+END_SRC
+
+
+** "y" instead of "yes"
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+
+** auto revert mode
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(global-auto-revert-mode 1)
+(add-hook 'dired-mode-hook 'auto-revert-mode)
+#+END_SRC
+
+
+* completion
+** company
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package! company
+    :config
+    (setq company-show-numbers t)
+)
+#+END_SRC
+
+
+* Programming Languages
+
+** tab width
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(add-hook 'c-mode-common-hook
+              (lambda () (setq indent-tabs-mode t)))
+(setq-default tab-width 4)
+(smart-tabs-add-language-support c++ c++-mode-hook
+      ((c-indent-line . c-basic-offset)
+       (c-indent-region . c-basic-offset)))
+#+END_SRC
+
+
+** clang format
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+;;/usr/share/clang/clang-format.el
+(use-package! clang-format+
+    :config
+    (require 'clang-format+)
+    (add-hook 'c-mode-common-hook #'clang-format+-mode)
+
+    (global-set-key (kbd "C-c i") 'clang-format-region)
+    (global-set-key (kbd "C-c u") 'clang-format-buffer)
+
+    (setq clang-format-style-option "llvm")
+    ;;(setq clang-format-style-option "google")
+    ;;(global-set-key [C-M-tab] 'clang-format-region)
+
+    (add-hook 'c-common-mode-hook 
+    (lambda ()
+        (add-hook (make-local-variable 'before-save-hook)
+                'clang-format-buffer))
+                )
+)
+#+END_SRC
+
+
+** python 
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package! lsp-python-ms
+    :config
+    (set-lsp-priority! 'mspyls 1)
+)
+#+END_SRC
+
+
+** ccls 
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(after! ccls
+    (setq ccls-initialization-options '(:index (:comments 2) 
+                                        :completion (:detailedLabel t)))
+    (set-lsp-priority! 'ccls 2) ; optional as ccls is the default in Doom
+)
+#+END_SRC
+
+
+** LSP
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package! lsp-mode
+    :config
+    (add-hook 'c-mode-hook 'lsp)
+    (add-hook 'c++-mode-hook 'lsp)
+
+    (setq gc-cons-threshold (* 100 1024 1024)
+        read-process-output-max (* 1024 1024)
+        treemacs-space-between-root-nodes nil
+        company-idle-delay 0.0
+        company-minimum-prefix-length 1
+        lsp-idle-delay 0.1)  ;; clangd is fast
+
+    (with-eval-after-load 'lsp-mode
+        (add-hook 'lsp-mode-hook #'lsp-enable-which-key-integration)
+        ;;(require 'dap-cpptools)
+        ;;(yas-global-mode)
+        )
+)
+#+END_SRC
+
+
+** debugger adapter support (DAP)
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; https://github.com/daviwil/dotfiles/blob/master/Emacs.org#debug-adapter-support
+;; https://www.reddit.com/r/emacs/comments/mxiqt6/how_to_setup_and_use_dapmode_for_c/
+(use-package! dap-mode
+    :defer
+    :custom
+    (dap-auto-configure-mode t                           "Automatically configure dap.")
+    (dap-auto-configure-features
+        '(sessions locals breakpoints expressions tooltip)  "Remove the button panel in the top.")
+
+    :bind 
+    (:map dap-mode-map
+          ("<f1>" . dap-debug)
+          ("C-<f1>" . dap-hydra)
+          ("<f4>" . dap-breakpoint-toggle) ;; :desc "DAP breakpoint toggle"
+
+          ("<f5>" . dap-continue) ;; :desc "DAP continue"
+          ("<f6>" . dap-next) ;; :desc "DAP next"
+          ("<f7>" . dap-step-in) ;; :desc "DAP step in"
+          ("<f8>" . dap-step-out) ;; :desc "DAP step out"          
+          
+          ("<f11>" . dap-disconnect) ;; :desc "DAP disconnect"
+          ("<f12>" . dap-restart-frame) ;; :desc "DAP restart frame"
+
+    )
+
+    :config
+    (dap-ui-mode 1)
+    (dap-tooltip-mode 1)
+    (dap-ui-controls-mode 1)
+
+    (require 'dap-node)
+    (dap-node-setup)
+
+    ;;(require 'dap-cpptools) ;; MS adapter  
+    (require 'dap-lldb) ;; LLVM adapter
+    ;;(require 'dap-gdb-lldb) ;; CodeFreak adapter
+
+    ;;--- set the debugger executable (c++)
+    (setq dap-lldb-debug-program '("/usr/bin/lldb-vscode"))
+
+    ;;; ask user for executable to debug if not specified explicitly (c++)
+    (setq dap-lldb-debugged-program-function 
+        (lambda () (read-file-name "Select file to debug.")))
+
+    ;;--- default debug template for (c++)
+    ;;  (dap-register-debug-template
+    ;;   "C++ LLDB dap"
+    ;;   (list :type "lldb-vscode"
+    ;;         :cwd nil
+    ;;         :args nil
+    ;;         :request "launch"
+    ;;         :program nil))
+
+    (require 'dap-python)    
+
+    (defun dap-debug-create-or-edit-json-template ()
+        "Edit the C++ debugging configuration or create + edit if none exists yet."
+        (interactive)
+        (let ((filename (concat (lsp-workspace-root) "/launch.json"))
+              (default "~/.doom.d/default-launch.json")
+              )
+        (unless (file-exists-p filename)
+            (copy-file default filename))
+        (find-file-existing filename)))   
+
+)
+;;(after! dap-mode) 
+;;(map! :after dap-mode
+;;   :map dap-mode-map
+;;   :n
+        
+;;    :desc "DAP debug"
+;;     "<f1>" #'dap-debug
+
+;;    :desc "DAP debug"
+;;     "C-<f1>" #'dap-hydra
+
+;;    :desc "DAP breakpoint toggle"
+;;    "<f4>" #'dap-breakpoint-toggle
+
+;;    :desc "DAP continue"
+;;    "<f5>" #'dap-continue
+
+;;    :desc "DAP next"
+;;    "<f6>" #'dap-next
+
+;;    :desc "DAP step-in"
+;;    "<f7>" #'dap-step-in
+
+;;    :desc "DAP step-out"
+;;    "<f8>" #'dap-step-out
+
+;;    :desc "DAP disconnect"
+;;    "<f11>" #'dap-disconnect
+
+;;    :desc "DAP restart frame"
+;;    "<f12>" #'dap-restart-frame
+;;)
+#+END_SRC
+
+
+** yasnippet
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(after! company)
+(after! yasnippet
+    (require 'yasnippet)
+    (require 'helm-c-yasnippet)
+    (setq helm-yas-space-match-any-greedy t)
+
+;;    (setq yas-snippet-dirs
+;;        '("~/.doom.d/snippets"                 ;; personal snippets
+;;            ;;"/path/to/some/collection/"           ;; foo-mode and bar-mode snippet collection
+;;            ;;"/path/to/yasnippet/yasmate/snippets" ;; the yasmate collection
+;;            ))
+
+    (yas-global-mode 1)
+
+    (defun company-mode/backend-with-yas (backend)
+        (if (and (listp backend) (member 'company-yasnippet backend))
+            backend
+        (append (if (consp backend) backend (list backend))
+                '(:with company-yasnippet))))
+    (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
+)
+;;(use-package! doom-snippets
+;;  :load-path "path/to/emacs-snippets"
+;;  :after yasnippet
+;;  )
+#+END_SRC
+
+
+** evil-nerd-commenter
+#+NAME:
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package! evil-nerd-commenter
+  :bind ("M-/" . evilnc-comment-or-uncomment-lines)
+)
+#+END_SRC
